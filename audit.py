@@ -1,9 +1,23 @@
 import requests
+import json
+
+
+def append_to_json(_dict, path):
+    with open(path, 'ab+') as f:
+        f.seek(0, 2)  # Go to the end of file
+        if f.tell() == 0:  # Check if file is empty
+            f.write(json.dumps([_dict], indent=4).encode())  # If empty, write an array
+        else:
+            f.seek(-1, 2)
+            f.truncate()  # Remove the last character, open the array
+            f.write(' , '.encode())  # Write the separator
+            f.write(json.dumps(_dict, indent=4).encode())  # Dump the dictionary
+            f.write(']'.encode())  # Close the array
 
 
 class Audit():
-    def __init__(self):
-        self.base_url = "https://webcache.googleusercontent.com/search?q=cache:{}"
+    def __init__(self, url):
+        self.base_url = url
         self.client = requests.Session()
         self.client.headers.update({"accept": "*/*"})
 
@@ -14,13 +28,12 @@ class Audit():
 
     @staticmethod
     def process_response(response, search_url):
-        info = {"Search Url": search_url}
-        info['Exist'] = True if response.status_code == 200 else False
-        if response.code == 200:
-            pass
+        info = {"Search Url": search_url, 'Exist': True if response.status_code == 200 else False}
+        return info
 
 
-a = Audit()
-b = a.do_request("youtube.com")
-a.process_response(b, "youtube")
-
+url = "https://webcache.googleusercontent.com/search?q=cache:{}"
+task = Audit(url=url)
+response = task.do_request("facebook.com")
+data = task.process_response(response, "youtube")
+append_to_json(data, "info.json")
