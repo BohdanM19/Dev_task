@@ -33,7 +33,8 @@ class Audit():
 
 
 url = "https://webcache.googleusercontent.com/search?q=cache:{}"
+search_url = "facebook.com"
 task = Audit(url=url)
-response = task.do_request("facebook.com")
-data = task.process_response(response, "youtube")
+response = task.do_request(search_url)
+data = task.process_response(response, search_url)
 append_to_json(data, "info.json")
