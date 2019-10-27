@@ -2,7 +2,18 @@ import requests
 import json
 
 
-class Audit():
+class BaseAudit():
+    def __init__(self, url):
+        self.base_url = url
+        self.client = requests.Session()
+
+    def do_request(self, url):
+        req_url = self.base_url.format(url)
+        with self.client.get(url=req_url) as resp:
+            return resp
+
+
+class Audit(BaseAudit):
     @staticmethod
     def append_to_json(_dict, path):
         with open(path, 'ab+') as f:
@@ -18,13 +29,9 @@ class Audit():
 
     def __init__(self, url):
         self.base_url = url
-        self.client = requests.Session()
+        super().__init__(url)
         self.client.headers.update({"accept": "*/*"})
 
-    def do_request(self, url):
-        req_url = self.base_url.format(url)
-        with self.client.get(url=req_url) as resp:
-            return resp
 
     @staticmethod
     def process_response(response, search_url):
@@ -40,7 +47,7 @@ class AuditTask():
     def search_url_in_cache(self, search_url):
         response = self.audit.do_request(search_url)
         data = self.audit.process_response(response, search_url)
-        self.audit.append_to_json(data, "info.json")
+        self.audit.append_to_json(data, "info.json")  # Write result to .json file
 
 
 url = "https://webcache.googleusercontent.com/search?q=cache:{}"
